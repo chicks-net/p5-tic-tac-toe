@@ -32,25 +32,58 @@ sub print_board {
 sub board_winner {
 	my ($board) = @_;
 
+	my @checks = (
+		# rows
+		[qw( A1 A2 A3 )],
+		[qw( B1 B2 B3 )],
+		[qw( C1 C2 C3 )],
+		# columns
+		[qw( A1 B1 C1 )],
+		[qw( A2 B2 C2 )],
+		[qw( A3 B3 C3 )],
+		# crosses
+		[qw( A1 B2 C3 )],
+		[qw( A3 B2 C1 )],
+	);
+
+	foreach my $check (@checks) {
+		my @addresses = @$check;
+		my $answers = $board->{$addresses[0]} . $board->{$addresses[1]} . $board->{$addresses[2]}; 
+#		print "checking '$answers'\n";
+		if ($answers eq 'XXX') {
+			return 'X';
+		} elsif ($answers eq 'OOO') {
+			return 'O';
+		}
+	}
+
 	return 0;
 }
 
 my $playing = new_board();
 
 my $move = 0;
-while (not board_winner and $move < 10) {
+while (not board_winner($playing) and $move < 10) {
+	print "\n";
 	print_board($playing);
 	print "\n";
 
 	my $whose_move = $moves[ $move % 2];
 
-	my $move_answer = prompt "[$move] place for $whose_move: ";
+	my $move_answer = uc prompt "[$move] place for $whose_move: ";
 
 	if ($move_answer =~ /^[A-C][1-3]$/) {
+		# TODO: is $move_answer available?
 		$playing->{$move_answer} = $whose_move;
 		$move++;
 	} else {
 		print "'$move_answer' is not a valid position (A1 .. C3).\n";
 	}
+}
+
+if (my $winner = board_winner($playing)) {
+	print "\n\n$winner WON!!!!\n\n";
+} else {
+	print "\m\mIt is a DRAW!\n\n";
 }
 
